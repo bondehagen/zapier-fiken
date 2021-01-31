@@ -1,0 +1,261 @@
+const perform = (z, bundle) => {
+  const options = {
+    url: `https://api.fiken.no/api/v2/companies/${bundle.inputData.slug}/invoices/drafts`,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${bundle.authData.access_token}`,
+      'X-ADDRESS': bundle.inputData.address,
+      'X-SLUG': bundle.inputData.slug,
+    },
+    params: {},
+    body: {
+      slug: bundle.inputData.slug,
+      type: bundle.inputData.type,
+      issueDate: bundle.inputData.issueDate,
+      daysUntilDueDate: bundle.inputData.daysUntilDueDate,
+      invoiceText: bundle.inputData.invoiceText,
+      yourReference: bundle.inputData.yourReference,
+      ourReference: bundle.inputData.ourReference,
+      orderReference: bundle.inputData.orderReference,
+      currency: bundle.inputData.currency,
+      bankAccountNumber: bundle.inputData.bankAccountNumber,
+      iban: bundle.inputData.iban,
+      bic: bundle.inputData.bic,
+      customerId: bundle.inputData.customerId,
+      lines: bundle.inputData.lines
+        ? bundle.inputData.lines.map((line) => {
+            return {
+              productId: line.productId,
+              description: line.description,
+              unitPrice: line.unitPrice,
+              vatType: line.vatType,
+              quantity: line.quantity,
+              discount: line.discount,
+              comment: line.comment,
+              incomeAccount: line.incomeAccount,
+            };
+          })
+        : [],
+    },
+  };
+
+  return z.request(options).then((response) => {
+    response.throwForStatus();
+    const results = response.json;
+
+    z.console.log('Result', results);
+    return results || {};
+  });
+};
+
+module.exports = {
+  operation: {
+    perform: perform,
+    inputFields: [
+      {
+        key: 'slug',
+        label: 'Company',
+        type: 'string',
+        dynamic: 'get_companies.slug.slug',
+        helpText: 'Select Fiken company',
+        required: true,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'type',
+        label: 'Type',
+        type: 'string',
+        default: 'invoice',
+        helpText:
+          'invoice, cash_invoice, offer, order_confirmation, credit_note',
+        required: true,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'issueDate',
+        label: 'Issue Date',
+        type: 'string',
+        helpText: 'Issue date of the invoice draft, format yyyy-mm-dd',
+        required: false,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'daysUntilDueDate',
+        label: 'Days until due date',
+        type: 'integer',
+        default: '14',
+        helpText: 'Days until due date of the invoice draft.',
+        required: true,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'invoiceText',
+        label: 'Invoice text',
+        type: 'string',
+        helpText: 'Comment/description printed above the invoice lines',
+        required: false,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'yourReference',
+        label: 'Your reference',
+        type: 'string',
+        required: false,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'ourReference',
+        label: 'Our reference',
+        type: 'string',
+        required: false,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'orderReference',
+        label: 'Order reference',
+        type: 'string',
+        required: false,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'currency',
+        label: 'Currency',
+        type: 'string',
+        default: 'NOK',
+        helpText: 'ISO 4217 currency code',
+        required: false,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'bankAccountNumber',
+        label: 'Bank Account Number',
+        type: 'string',
+        required: false,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'iban',
+        label: 'IBAN',
+        type: 'string',
+        required: false,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'bic',
+        label: 'BIC',
+        type: 'string',
+        required: false,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'customerId',
+        label: 'Customer ID',
+        type: 'integer',
+        required: true,
+        list: false,
+        altersDynamicFields: false,
+      },
+      {
+        key: 'lines',
+        children: [
+          {
+            key: 'productId',
+            label: 'Product ID',
+            type: 'integer',
+            required: false,
+            list: false,
+            altersDynamicFields: false,
+          },
+          {
+            key: 'description',
+            label: 'Description',
+            type: 'string',
+            required: false,
+            list: false,
+            altersDynamicFields: false,
+          },
+          {
+            key: 'unitPrice',
+            label: 'Unit Price',
+            type: 'integer',
+            helpText: 'Net price per unit in invoice currency (in cents).',
+            required: false,
+            list: false,
+            altersDynamicFields: false,
+          },
+          {
+            key: 'vatType',
+            label: 'VAT Type',
+            type: 'string',
+            helpText:
+              'Vat Types for SALES: [none, high, medium, raw_fish, low, exempt_import_export, exempt, outside, exempt_reverse]',
+            required: false,
+            list: false,
+            altersDynamicFields: false,
+          },
+          {
+            key: 'quantity',
+            label: 'Quantity',
+            type: 'number',
+            default: '1',
+            required: true,
+            list: false,
+            altersDynamicFields: false,
+          },
+          {
+            key: 'discount',
+            label: 'Discount',
+            type: 'number',
+            required: false,
+            list: false,
+            altersDynamicFields: false,
+          },
+          {
+            key: 'comment',
+            label: 'Comment',
+            type: 'string',
+            required: false,
+            list: false,
+            altersDynamicFields: false,
+          },
+          {
+            key: 'incomeAccount',
+            label: 'Income Account',
+            type: 'string',
+            default: '1500',
+            helpText:
+              "Field is similar to vatType, it defaults to the product's income account. Either the line or the product needs to have an income account set.",
+            required: false,
+            list: false,
+            altersDynamicFields: false,
+          },
+        ],
+        label: 'Invoice Lines',
+        required: false,
+        altersDynamicFields: false,
+      },
+    ],
+  },
+  key: 'create_invoice_draft',
+  noun: 'Invoice Draft',
+  display: {
+    label: 'Create Invoice Draft',
+    description: 'Creates an invoice draft',
+    hidden: false,
+    important: false,
+  },
+};
